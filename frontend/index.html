@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DevPulse Dashboard</title>
+    <style>
+        :root {
+            --bg1: #0f172a; --bg2: #1e1b4b; --accent: #818cf8; --text-color: #f8fafc;
+        }
+        body {
+            margin: 0; padding: 2rem; font-family: system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--bg1), var(--bg2));
+            color: var(--text-color); min-height: 100vh; transition: all 0.8s ease;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        /* Glassmorphism glass card structure */
+        .card {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px;
+            padding: 2rem; margin-bottom: 2rem; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3);
+        }
+        h1 { color: var(--accent); margin-top: 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        input, select, button {
+            width: 100%; padding: 0.8rem; margin-top: 0.5rem; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white;
+        }
+        button { background: var(--accent); color: var(--bg1); font-weight: bold; cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>DevPulse // System Analytics</h1>
+            <p>Current State: <strong id="status-text" style="color: var(--accent)">Loading...</strong></p>
+            <div class="grid">
+                <div><h3>Hours Active: <span id="hours-val">0</span></h3></div>
+                <div><h3>Primary Tool: <span id="lang-val">None</span></h3></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Log New Dev Session</h2>
+            <form id="logForm">
+                <label>Minutes Coded</label>
+                <input type="number" id="minutes" required min="1">
+                <label>Language/Tool</label>
+                <select id="language">
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="Java">Java</option>
+                    <option value="Python">Python</option>
+                </select>
+                <label>Focus Intent</label>
+                <input type="text" id="focusType" placeholder="e.g., Feature building, Bug fixing" required>
+                <button type="submit" style="margin-top: 1.5rem;">Upload to Cloud Engine</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        async function fetchAnalytics() {
+            const res = await fetch(`${API_URL}/analytics`);
+            const data = await res.json();
+            
+            document.getElementById('hours-val').innerText = data.hours_coded || 0;
+            document.getElementById('lang-val').innerText = data.top_language || 'None';
+            document.getElementById('status-text').innerText = data.productivity_status || 'Offline';
+
+            // Dynamically inject the theme values compiled by Python directly into CSS variables
+            if (data.theme) {
+                document.documentElement.style.setProperty('--bg1', data.theme.bg1);
+                document.documentElement.style.setProperty('--bg2', data.theme.bg2);
+                document.documentElement.style.setProperty('--accent', data.theme.accent);
+            }
+        }
+
+        document.getElementById('logForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(`${API_URL}/logs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    minutes: document.getElementById('minutes').value,
+                    language: document.getElementById('language').value,
+                    focusType: document.getElementById('focusType').value
+                })
+            });
+            document.getElementById('logForm').reset();
+            fetchAnalytics();
+        });
+
+        fetchAnalytics();
+    </script>
+</body>
+</html>
