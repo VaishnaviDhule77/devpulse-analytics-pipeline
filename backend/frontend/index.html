@@ -58,10 +58,9 @@
     </div>
 
     <script>
-        // 1. Properly defined the Cloud API base URL variable
-        const API_URL = 'https://devpulse-backend.onrender.com/api';
+        // 🛠️ Changed to a relative path so it hits the correct hosted backend instance automatically
+        const API_URL = '/api';
 
-        // 2. Fixed syntax error by deleting the stray text line here
         async function fetchAnalytics() {
             try {
                 const res = await fetch(`${API_URL}/analytics`);
