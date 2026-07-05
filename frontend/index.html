@@ -58,36 +58,51 @@
     </div>
 
     <script>
-fetch('https://devpulse-backend.onrender.com/api/analytics')
-        async function fetchAnalytics() {
-            const res = await fetch(`${API_URL}/analytics`);
-            const data = await res.json();
-            
-            document.getElementById('hours-val').innerText = data.hours_coded || 0;
-            document.getElementById('lang-val').innerText = data.top_language || 'None';
-            document.getElementById('status-text').innerText = data.productivity_status || 'Offline';
+        // 1. Properly defined the Cloud API base URL variable
+        const API_URL = 'https://devpulse-backend.onrender.com/api';
 
-            // Dynamically inject the theme values compiled by Python directly into CSS variables
-            if (data.theme) {
-                document.documentElement.style.setProperty('--bg1', data.theme.bg1);
-                document.documentElement.style.setProperty('--bg2', data.theme.bg2);
-                document.documentElement.style.setProperty('--accent', data.theme.accent);
+        // 2. Fixed syntax error by deleting the stray text line here
+        async function fetchAnalytics() {
+            try {
+                const res = await fetch(`${API_URL}/analytics`);
+                const data = await res.json();
+                
+                document.getElementById('hours-val').innerText = data.hours_coded || 0;
+                document.getElementById('lang-val').innerText = data.top_language || 'None';
+                document.getElementById('status-text').innerText = data.productivity_status || 'Offline';
+
+                // Dynamically inject the theme values compiled by Python directly into CSS variables
+                if (data.theme) {
+                    document.documentElement.style.setProperty('--bg1', data.theme.bg1);
+                    document.documentElement.style.setProperty('--bg2', data.theme.bg2);
+                    document.documentElement.style.setProperty('--accent', data.theme.accent);
+                }
+            } catch (error) {
+                console.error("Error communicating with Render cloud:", error);
+                document.getElementById('status-text').innerText = 'Connection Error';
             }
         }
 
         document.getElementById('logForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await fetch(`${API_URL}/logs`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    minutes: document.getElementById('minutes').value,
-                    language: document.getElementById('language').value,
-                    focusType: document.getElementById('focusType').value
-                })
-            });
-            document.getElementById('logForm').reset();
-            fetchAnalytics();
+            document.getElementById('status-text').innerText = 'Uploading...';
+            
+            try {
+                await fetch(`${API_URL}/logs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        minutes: document.getElementById('minutes').value,
+                        language: document.getElementById('language').value,
+                        focusType: document.getElementById('focusType').value
+                    })
+                });
+                document.getElementById('logForm').reset();
+                fetchAnalytics();
+            } catch (error) {
+                console.error("Failed to post session:", error);
+                alert("Could not reach cloud server.");
+            }
         });
 
         fetchAnalytics();
