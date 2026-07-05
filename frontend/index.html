@@ -58,8 +58,7 @@
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000/api';
-
+fetch('https://devpulse-backend.onrender.com/api/analytics')
         async function fetchAnalytics() {
             const res = await fetch(`${API_URL}/analytics`);
             const data = await res.json();
