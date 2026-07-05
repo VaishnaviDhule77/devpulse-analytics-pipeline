@@ -13,6 +13,9 @@ app.use((req, res, next) => {
     next();
 });
 
+// 🛠️ HOST THE FRONTEND: Serve your static UI dashboard files from the 'frontend' folder
+app.use(express.static(path.join(__dirname, 'frontend')));
+
 const DB_FILE = path.join(__dirname, 'metrics.json');
 
 // Initialize local JSON database if it doesn't exist
